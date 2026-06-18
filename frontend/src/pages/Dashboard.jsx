@@ -1,12 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { tasksAPI } from '../services/api'
-import { CheckCircle, Clock, Calendar, ArrowRight, Sparkles } from 'lucide-react'
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle2,
+  AlertCircle,
+  Clock3,
+  Flag,
+  Sparkles,
+} from 'lucide-react'
 
 function Dashboard({ user, token }) {
   const [progress, setProgress] = useState(null)
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('all')
 
   useEffect(() => {
     loadDashboardData()
@@ -16,10 +25,10 @@ function Dashboard({ user, token }) {
     try {
       const [progressData, tasksData] = await Promise.all([
         tasksAPI.getProgress(token),
-        tasksAPI.getTasks(token)
+        tasksAPI.getTasks(token),
       ])
       setProgress(progressData)
-      setTasks(tasksData.filter(t => t.status !== 'completed').slice(0, 5))
+      setTasks(tasksData)
     } catch (error) {
       console.error('Failed to load dashboard data:', error)
     } finally {
@@ -27,178 +36,429 @@ function Dashboard({ user, token }) {
     }
   }
 
-  const quickActions = [
-    { title: 'View All Tasks', path: '/tasks', icon: CheckCircle, color: 'bg-blue-500' },
-    { title: 'Browse Resources', path: '/resources', icon: Calendar, color: 'bg-green-500' },
-    { title: 'Ask Watson', path: '/chat', icon: Sparkles, color: 'bg-purple-500' },
+  const normalizedTasks = useMemo(() => {
+    return tasks.map((task, index) => ({
+      ...task,
+      onboardingStep: index + 1,
+      statusLabel:
+        task.status === 'completed'
+          ? 'Done'
+          : task.status === 'in_progress'
+            ? 'In progress'
+            : task.status === 'blocked'
+              ? 'Blocked'
+              : 'To do',
+    }))
+  }, [tasks])
+
+  const filteredTasks = useMemo(() => {
+    if (filter === 'all') return normalizedTasks
+    if (filter === 'todo') return normalizedTasks.filter((task) => task.status === 'pending')
+    if (filter === 'in_progress') return normalizedTasks.filter((task) => task.status === 'in_progress')
+    if (filter === 'done') return normalizedTasks.filter((task) => task.status === 'completed')
+    return normalizedTasks
+  }, [filter, normalizedTasks])
+
+  const blockers = useMemo(() => {
+    return normalizedTasks.filter(
+      (task) =>
+        task.status === 'blocked'
+        || task.priority === 'high'
+        || task.description?.toLowerCase().includes('blocked')
+    ).slice(0, 3)
+  }, [normalizedTasks])
+
+  const nextSteps = useMemo(() => {
+    return normalizedTasks
+      .filter((task) => task.status !== 'completed')
+      .slice(0, 4)
+  }, [normalizedTasks])
+
+  const resources = [
+    {
+      title: 'Employee Handbook',
+      description: 'Policies, benefits, and first-week essentials.',
+      meta: 'Core onboarding',
+    },
+    {
+      title: 'Benefits Portal',
+      description: 'Enroll in health, payroll, and direct deposit.',
+      meta: 'HR systems',
+    },
+    {
+      title: 'Team Wiki',
+      description: 'Find rituals, contacts, and team-specific norms.',
+      meta: 'Team setup',
+    },
+    {
+      title: 'Engineering Setup Guide',
+      description: 'Laptop, accounts, VPN, and development environment.',
+      meta: 'Technical setup',
+    },
   ]
+
+  const summary = progress || {
+    completion_percentage: 0,
+    completed_tasks: normalizedTasks.filter((task) => task.status === 'completed').length,
+    in_progress_tasks: normalizedTasks.filter((task) => task.status === 'in_progress').length,
+    pending_tasks: normalizedTasks.filter((task) => task.status === 'pending').length,
+  }
+
+  const completedThisWeek = Math.max(1, Math.min(summary.completed_tasks || 0, 3))
+  const totalSteps = normalizedTasks.length || 8
+  const currentStep = Math.min((summary.completed_tasks || 0) + 1, totalSteps)
+
+  const getStatusClasses = (status) => {
+    if (status === 'completed') return 'status-badge status-done'
+    if (status === 'in_progress') return 'status-badge status-progress'
+    if (status === 'blocked') return 'status-badge status-blocked'
+    return 'status-badge status-todo'
+  }
+
+  const getPriorityBadge = (priority) => {
+    if (priority === 'high') return 'status-badge status-overdue'
+    if (priority === 'medium') return 'status-badge status-blocked'
+    return 'status-badge status-todo'
+  }
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-gray-500">Loading...</div>
+      <div className="flex min-h-[420px] items-center justify-center">
+        <div className="card-muted text-sm text-[#6f6f6f]">Loading your onboarding workspace…</div>
       </div>
     )
   }
 
   return (
     <div className="space-y-6">
-      {/* Welcome Banner */}
-      <div className="bg-gradient-to-r from-ibm-blue-500 to-ibm-blue-600 rounded-lg shadow-lg p-8 text-white">
-        <h1 className="text-3xl font-bold mb-2">
-          Welcome to IBM, {user?.first_name}! 🎉
-        </h1>
-        <p className="text-ibm-blue-100 text-lg">
-          Your onboarding journey starts here. Let's get you up to speed!
-        </p>
-      </div>
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_360px]">
+        <div className="space-y-6">
+          <div className="card">
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                <div className="max-w-3xl">
+                  <p className="text-sm font-medium text-[#6f6f6f]">
+                    Welcome back, {user?.first_name || 'new hire'}.
+                  </p>
+                  <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#161616] md:text-[2.6rem]">
+                    You’re <span className="summary-number-good">{summary.completion_percentage}%</span> through onboarding
+                    {' '}— <span className={blockers.length > 0 ? 'summary-number-alert' : 'summary-number-neutral'}>
+                      {blockers.length}
+                    </span>{' '}
+                    {blockers.length === 1 ? 'task needs attention' : 'tasks need attention'}.
+                  </h2>
+                </div>
 
-      {/* Progress Overview */}
-      {progress && (
-        <div className="card">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Your Progress</h2>
-          <div className="mb-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Onboarding Completion</span>
-              <span className="font-semibold">{progress.completion_percentage}%</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="delta-pill">{completedThisWeek} done this week</span>
+                  <Link to="/tasks" className="btn-primary">
+                    Continue onboarding
+                  </Link>
+                </div>
+              </div>
+
+              <div className="card-muted">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-[#525252]">Progress</p>
+                    <p className="mt-1 text-sm text-[#6f6f6f]">
+                      Step {currentStep} of {totalSteps}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-left sm:text-right">
+                    <div>
+                      <p className="text-2xl font-semibold text-[#198038]">{summary.completed_tasks || 0}</p>
+                      <p className="text-xs text-[#6f6f6f]">Done</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-semibold text-[#0f62fe]">{summary.in_progress_tasks || 0}</p>
+                      <p className="text-xs text-[#6f6f6f]">In progress</p>
+                    </div>
+                    <div>
+                      <p className="text-2xl font-semibold text-[#525252]">{summary.pending_tasks || 0}</p>
+                      <p className="text-xs text-[#6f6f6f]">To do</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 h-3 overflow-hidden rounded-full bg-white">
+                  <div
+                    className="h-full rounded-full bg-[#0f62fe] transition-all duration-500"
+                    style={{ width: `${summary.completion_percentage || 0}%` }}
+                  />
+                </div>
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-ibm-blue-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${progress.completion_percentage}%` }}
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-3">
+            <div className="card-muted">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-[#525252]">Next milestone</p>
+                  <p className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[#161616]">
+                    {currentStep}/{totalSteps}
+                  </p>
+                  <p className="mt-3 text-sm text-[#525252]">
+                    Keep moving through your onboarding checklist in order.
+                  </p>
+                </div>
+                <ArrowRight className="text-[#161616]" size={22} />
+              </div>
+            </div>
+
+            <div className="card-muted">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-[#525252]">In progress</p>
+                  <p className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[#161616]">
+                    {summary.in_progress_tasks || 0}
+                  </p>
+                  <p className="mt-3 text-sm text-[#525252]">
+                    Active tasks already underway and ready to finish.
+                  </p>
+                </div>
+                <Clock3 className="text-[#0f62fe]" size={22} />
+              </div>
+            </div>
+
+            <div className="card-muted">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-[#525252]">Blockers</p>
+                  <p className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[#161616]">
+                    {blockers.length}
+                  </p>
+                  <p className="mt-3 text-sm text-[#525252]">
+                    Surface anything waiting on approvals, access, or follow-up.
+                  </p>
+                </div>
+                <Flag className="text-[#da1e28]" size={22} />
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-sm font-medium text-[#6f6f6f]">Today’s focus</p>
+                <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+                  Track the next steps in your onboarding flow
+                </h3>
+              </div>
+
+              <div className="segmented-control">
+                {[
+                  { key: 'all', label: 'All' },
+                  { key: 'todo', label: 'To do' },
+                  { key: 'in_progress', label: 'In progress' },
+                  { key: 'done', label: 'Done' },
+                ].map((option) => (
+                  <button
+                    key={option.key}
+                    onClick={() => setFilter(option.key)}
+                    className={filter === option.key ? 'segmented-option-active' : 'segmented-option'}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {filteredTasks.length > 0 ? (
+                filteredTasks.slice(0, 6).map((task) => (
+                  <div
+                    key={task.id}
+                    className="card-muted transition-transform duration-200 hover:-translate-y-0.5"
+                  >
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="status-badge status-todo">Step {task.onboardingStep}</span>
+                          <span className={getStatusClasses(task.status)}>{task.statusLabel}</span>
+                          <span className={getPriorityBadge(task.priority)}>
+                            {task.priority || 'Normal'}
+                          </span>
+                        </div>
+
+                        <h4 className="mt-3 text-lg font-semibold text-[#161616]">{task.title}</h4>
+                        <p className="mt-2 max-w-2xl text-sm text-[#525252]">{task.description}</p>
+
+                        <div className="mt-4 flex flex-wrap gap-4 text-xs text-[#6f6f6f]">
+                          <span>Owner: {user?.manager || 'Hiring team'}</span>
+                          <span>Estimate: {task.estimated_time || '30 min'}</span>
+                          {task.due_date && (
+                            <span>Due: {new Date(task.due_date).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {task.status === 'completed' ? (
+                          <CheckCircle2 className="text-[#198038]" size={22} />
+                        ) : task.status === 'blocked' ? (
+                          <AlertCircle className="text-[#da1e28]" size={22} />
+                        ) : (
+                          <ArrowRight className="text-[#161616]" size={22} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="card-muted text-center">
+                  <CheckCircle2 className="mx-auto text-[#198038]" size={40} />
+                  <h4 className="mt-4 text-lg font-semibold text-[#161616]">No tasks yet</h4>
+                  <p className="mt-2 text-sm text-[#525252]">
+                    Your onboarding plan will appear here once tasks are assigned.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid gap-6 xl:grid-cols-2">
+            <div className="card">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-[#6f6f6f]">Resources</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+                    Everything you need in one place
+                  </h3>
+                </div>
+                <Link to="/resources" className="text-sm font-semibold text-[#0043ce]">
+                  View all
+                </Link>
+              </div>
+
+              <div className="mt-5 grid gap-3">
+                {resources.map((resource) => (
+                  <div key={resource.title} className="card-muted">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-[#0043ce]">
+                        <BookOpen size={18} />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-[#161616]">{resource.title}</p>
+                        <p className="mt-1 text-sm text-[#525252]">{resource.description}</p>
+                        <p className="mt-2 text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">
+                          {resource.meta}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="card">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-[#6f6f6f]">Blockers</p>
+                  <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+                    Flag anything slowing you down
+                  </h3>
+                </div>
+                <span className={blockers.length > 0 ? 'status-badge status-blocked' : 'status-badge status-done'}>
+                  {blockers.length > 0 ? `${blockers.length} active` : 'Clear'}
+                </span>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                {blockers.length > 0 ? (
+                  blockers.map((task) => (
+                    <div key={task.id} className="rounded-[18px] border border-[#ffd7d9] bg-[#fff1f1] p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-[#161616]">{task.title}</p>
+                          <p className="mt-1 text-sm text-[#525252]">{task.description}</p>
+                          <p className="mt-3 text-xs text-[#6f6f6f]">
+                            Suggested owner: {user?.manager || 'IT / onboarding lead'}
+                          </p>
+                        </div>
+                        <AlertCircle className="shrink-0 text-[#da1e28]" size={18} />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="card-muted text-center">
+                    <CheckCircle2 className="mx-auto text-[#198038]" size={36} />
+                    <p className="mt-3 text-sm font-semibold text-[#161616]">No blockers right now</p>
+                    <p className="mt-1 text-sm text-[#525252]">
+                      You’re clear to keep moving through the next onboarding steps.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="helper-panel">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-white/65">Optional helper</p>
+                <h3 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-white">
+                  Need a nudge?
+                </h3>
+              </div>
+              <Sparkles className="text-white/80" size={20} />
+            </div>
+
+            <div className="mt-6 space-y-3">
+              {nextSteps.length > 0 ? (
+                nextSteps.map((task) => (
+                  <button
+                    key={`helper-${task.id}`}
+                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10"
+                  >
+                    <p className="text-sm font-semibold text-white">{task.title}</p>
+                    <p className="mt-1 text-xs text-white/60">Suggested next action</p>
+                  </button>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/70">
+                  You’re all caught up. Check back when new onboarding tasks are assigned.
+                </div>
+              )}
+            </div>
+
+            <div className="mt-5 rounded-2xl bg-black/20 p-3">
+              <input
+                type="text"
+                placeholder="Ask anything…"
+                className="w-full border-0 bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
               />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4 mt-6">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">{progress.completed_tasks}</div>
-              <div className="text-sm text-gray-600">Completed</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">{progress.in_progress_tasks}</div>
-              <div className="text-sm text-gray-600">In Progress</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-gray-600">{progress.pending_tasks}</div>
-              <div className="text-sm text-gray-600">Pending</div>
-            </div>
-          </div>
-        </div>
-      )}
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {quickActions.map((action) => {
-            const Icon = action.icon
-            return (
-              <Link
-                key={action.path}
-                to={action.path}
-                className="card hover:shadow-lg transition-shadow cursor-pointer group"
-              >
-                <div className="flex items-center space-x-4">
-                  <div className={`${action.color} p-3 rounded-lg text-white`}>
-                    <Icon size={24} />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-800 group-hover:text-ibm-blue-600 transition-colors">
-                      {action.title}
-                    </h3>
-                  </div>
-                  <ArrowRight className="text-gray-400 group-hover:text-ibm-blue-600 transition-colors" size={20} />
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      </div>
-
-      {/* Upcoming Tasks */}
-      <div className="card">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-bold text-gray-800">Upcoming Tasks</h2>
-          <Link to="/tasks" className="text-ibm-blue-600 hover:text-ibm-blue-700 text-sm font-medium">
-            View All →
-          </Link>
-        </div>
-        {tasks.length > 0 ? (
-          <div className="space-y-3">
-            {tasks.map((task) => (
-              <div
-                key={task.id}
-                className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <div className="mt-1">
-                  {task.status === 'in_progress' ? (
-                    <Clock className="text-yellow-500" size={20} />
-                  ) : (
-                    <div className="w-5 h-5 border-2 border-gray-300 rounded" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-medium text-gray-800">{task.title}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{task.description}</p>
-                  <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-                    <span className="flex items-center">
-                      <Clock size={12} className="mr-1" />
-                      {task.estimated_time}
-                    </span>
-                    {task.due_date && (
-                      <span className="flex items-center">
-                        <Calendar size={12} className="mr-1" />
-                        Due: {new Date(task.due_date).toLocaleDateString()}
-                      </span>
-                    )}
-                    <span className={`px-2 py-0.5 rounded-full ${
-                      task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                      task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
-                    }`}>
-                      {task.priority}
-                    </span>
-                  </div>
-                </div>
+          <div className="card">
+            <p className="text-sm font-medium text-[#6f6f6f]">Your onboarding profile</p>
+            <div className="mt-4 space-y-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">Role</p>
+                <p className="mt-1 text-base font-semibold text-[#161616]">{user?.role || 'New hire'}</p>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-500">
-            <CheckCircle size={48} className="mx-auto mb-2 text-green-500" />
-            <p>All tasks completed! Great job! 🎉</p>
-          </div>
-        )}
-      </div>
-
-      {/* User Info Card */}
-      <div className="card bg-gradient-to-br from-gray-50 to-gray-100">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Your Information</h2>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="text-sm text-gray-600">Role</p>
-            <p className="font-semibold text-gray-800">{user?.role}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Department</p>
-            <p className="font-semibold text-gray-800">{user?.department}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Location</p>
-            <p className="font-semibold text-gray-800">{user?.location}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Manager</p>
-            <p className="font-semibold text-gray-800">{user?.manager}</p>
-          </div>
-          <div>
-            <p className="text-sm text-gray-600">Start Date</p>
-            <p className="font-semibold text-gray-800">
-              {user?.start_date ? new Date(user.start_date).toLocaleDateString() : 'N/A'}
-            </p>
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">Department</p>
+                <p className="mt-1 text-base font-semibold text-[#161616]">{user?.department || 'Team assignment pending'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">Manager</p>
+                <p className="mt-1 text-base font-semibold text-[#161616]">{user?.manager || 'Manager not assigned'}</p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">Start date</p>
+                <p className="mt-1 text-base font-semibold text-[#161616]">
+                  {user?.start_date ? new Date(user.start_date).toLocaleDateString() : 'TBD'}
+                </p>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

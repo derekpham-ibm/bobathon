@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { chatAPI } from '../services/api'
-import { Send, Sparkles, User, Bot } from 'lucide-react'
+import { Bot, Send, Sparkles, User } from 'lucide-react'
 
 function Chat({ user, token }) {
   const [messages, setMessages] = useState([])
@@ -22,13 +22,14 @@ function Chat({ user, token }) {
       setMessages(data.messages || [])
     } catch (error) {
       console.error('Failed to load chat history:', error)
-      // Add welcome message if history fails
-      setMessages([{
-        id: 'welcome',
-        sender: 'assistant',
-        message: `Welcome to IBM Blue Connect, ${user?.first_name}! I'm your AI assistant. How can I help you today?`,
-        timestamp: new Date().toISOString()
-      }])
+      setMessages([
+        {
+          id: 'welcome',
+          sender: 'assistant',
+          message: `Welcome to B2H, ${user?.first_name}! I can help you find onboarding steps, resources, and next actions.`,
+          timestamp: new Date().toISOString(),
+        },
+      ])
     }
   }
 
@@ -44,35 +45,35 @@ function Chat({ user, token }) {
       id: `user_${Date.now()}`,
       sender: 'user',
       message: inputMessage,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
 
-    setMessages(prev => [...prev, userMessage])
+    setMessages((prev) => [...prev, userMessage])
     setInputMessage('')
     setLoading(true)
 
     try {
       const response = await chatAPI.sendMessage(inputMessage, token)
-      
+
       const assistantMessage = {
         id: `assistant_${Date.now()}`,
         sender: 'assistant',
         message: response.response,
         suggestions: response.suggestions || [],
         resources: response.resources || [],
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       }
 
-      setMessages(prev => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage])
     } catch (error) {
       console.error('Failed to send message:', error)
       const errorMessage = {
         id: `error_${Date.now()}`,
         sender: 'assistant',
-        message: "I'm sorry, I encountered an error. Please try again.",
-        timestamp: new Date().toISOString()
+        message: 'I hit an issue while responding. Please try again in a moment.',
+        timestamp: new Date().toISOString(),
       }
-      setMessages(prev => [...prev, errorMessage])
+      setMessages((prev) => [...prev, errorMessage])
     } finally {
       setLoading(false)
     }
@@ -84,125 +85,169 @@ function Chat({ user, token }) {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="card bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-        <div className="flex items-center space-x-3">
-          <div className="bg-white/20 p-3 rounded-lg">
-            <Sparkles size={32} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold">Watson Assistant</h1>
-            <p className="text-purple-100">Ask me anything about your onboarding</p>
-          </div>
-        </div>
-      </div>
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.6fr)_320px]">
+        <div className="space-y-6">
+          <div className="helper-panel">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm font-medium text-white/65">Optional helper</p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-white">
+                  Ask for the next best onboarding move.
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm text-white/70">
+                  This helper shell keeps the MVP lightweight while still giving new hires a guided place to ask questions.
+                </p>
+              </div>
+              <Sparkles className="text-white/80" size={22} />
+            </div>
 
-      {/* Chat Container */}
-      <div className="card h-[600px] flex flex-col">
-        {/* Messages */}
-        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2">
-          {messages.map((msg) => (
-            <div key={msg.id}>
-              <div className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`flex items-start space-x-2 max-w-[80%] ${
-                  msg.sender === 'user' ? 'flex-row-reverse space-x-reverse' : ''
-                }`}>
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                    msg.sender === 'user' ? 'bg-ibm-blue-500' : 'bg-purple-500'
-                  }`}>
-                    {msg.sender === 'user' ? (
-                      <User size={18} className="text-white" />
-                    ) : (
-                      <Bot size={18} className="text-white" />
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              {[
+                'What should I do first this week?',
+                'Where do I find the engineering setup guide?',
+                'Who can unblock my access request?',
+                'What should I prepare for my manager 1:1?',
+              ].map((prompt) => (
+                <button
+                  key={prompt}
+                  onClick={() => handleSuggestionClick(prompt)}
+                  className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-white transition hover:bg-white/10"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="card h-[620px]">
+            <div className="flex h-full flex-col">
+              <div className="border-b border-[#e0e0e0] pb-4">
+                <p className="text-sm font-medium text-[#6f6f6f]">Conversation</p>
+                <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+                  B2H helper panel
+                </h3>
+              </div>
+
+              <div className="mt-5 flex-1 space-y-4 overflow-y-auto pr-2">
+                {messages.map((msg) => (
+                  <div key={msg.id}>
+                    <div className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`flex max-w-[85%] items-start gap-3 ${
+                        msg.sender === 'user' ? 'flex-row-reverse' : ''
+                      }`}>
+                        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${
+                          msg.sender === 'user'
+                            ? 'bg-[#0f62fe] text-white'
+                            : 'bg-[#161616] text-white'
+                        }`}>
+                          {msg.sender === 'user' ? <User size={18} /> : <Bot size={18} />}
+                        </div>
+
+                        <div>
+                          <div className={`rounded-[20px] px-4 py-3 text-sm ${
+                            msg.sender === 'user'
+                              ? 'bg-[#0f62fe] text-white'
+                              : 'bg-[#f4f4f4] text-[#161616]'
+                          }`}>
+                            <p className="whitespace-pre-wrap">{msg.message}</p>
+                          </div>
+                          <p className="mt-1 px-1 text-xs text-[#6f6f6f]">
+                            {new Date(msg.timestamp).toLocaleTimeString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {msg.suggestions && msg.suggestions.length > 0 && (
+                      <div className="mt-3 ml-12 flex flex-wrap gap-2">
+                        {msg.suggestions.map((suggestion, idx) => (
+                          <button
+                            key={idx}
+                            onClick={() => handleSuggestionClick(suggestion)}
+                            className="rounded-full bg-[#f4f4f4] px-3 py-1.5 text-xs font-medium text-[#525252] transition hover:bg-[#ebebeb]"
+                          >
+                            {suggestion}
+                          </button>
+                        ))}
+                      </div>
                     )}
                   </div>
-                  <div>
-                    <div className={`rounded-lg p-3 ${
-                      msg.sender === 'user'
-                        ? 'bg-ibm-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                ))}
+
+                {loading && (
+                  <div className="flex justify-start">
+                    <div className="flex items-start gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#161616] text-white">
+                        <Bot size={18} />
+                      </div>
+                      <div className="rounded-[20px] bg-[#f4f4f4] px-4 py-3">
+                        <div className="flex gap-2">
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-[#8d8d8d]" style={{ animationDelay: '0ms' }} />
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-[#8d8d8d]" style={{ animationDelay: '150ms' }} />
+                          <div className="h-2 w-2 animate-bounce rounded-full bg-[#8d8d8d]" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 px-1">
-                      {new Date(msg.timestamp).toLocaleTimeString()}
-                    </p>
                   </div>
-                </div>
+                )}
+
+                <div ref={messagesEndRef} />
               </div>
 
-              {/* Suggestions */}
-              {msg.suggestions && msg.suggestions.length > 0 && (
-                <div className="mt-2 ml-10 space-y-2">
-                  <p className="text-xs text-gray-500 font-medium">Suggested questions:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {msg.suggestions.map((suggestion, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSuggestionClick(suggestion)}
-                        className="text-xs px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full hover:bg-purple-100 transition-colors"
-                      >
-                        {suggestion}
-                      </button>
-                    ))}
-                  </div>
+              <form onSubmit={handleSendMessage} className="mt-5 border-t border-[#e0e0e0] pt-4">
+                <div className="flex gap-3">
+                  <input
+                    type="text"
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    placeholder="Ask anything…"
+                    className="input-field flex-1"
+                    disabled={loading}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading || !inputMessage.trim()}
+                    className="btn-primary h-[52px] w-[52px] rounded-2xl p-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Send size={18} />
+                  </button>
                 </div>
-              )}
+              </form>
             </div>
-          ))}
-          
-          {loading && (
-            <div className="flex justify-start">
-              <div className="flex items-start space-x-2 max-w-[80%]">
-                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center">
-                  <Bot size={18} className="text-white" />
-                </div>
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <div className="flex space-x-2">
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          <div ref={messagesEndRef} />
+          </div>
         </div>
 
-        {/* Input Form */}
-        <form onSubmit={handleSendMessage} className="border-t pt-4">
-          <div className="flex space-x-2">
-            <input
-              type="text"
-              value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
-              placeholder="Type your message..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              disabled={loading || !inputMessage.trim()}
-              className="bg-purple-500 hover:bg-purple-600 text-white p-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Send size={20} />
-            </button>
+        <aside className="space-y-6">
+          <div className="card">
+            <p className="text-sm font-medium text-[#6f6f6f]">Suggested prompts</p>
+            <div className="mt-4 space-y-3">
+              {[
+                'Show me my next onboarding step',
+                'Find the benefits portal',
+                'Summarize what is blocked',
+                'Help me prepare for my first week',
+              ].map((item) => (
+                <button
+                  key={item}
+                  onClick={() => handleSuggestionClick(item)}
+                  className="w-full rounded-2xl bg-[#f4f4f4] px-4 py-3 text-left text-sm font-medium text-[#161616] transition hover:bg-[#ebebeb]"
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
           </div>
-        </form>
-      </div>
 
-      {/* Quick Tips */}
-      <div className="card bg-purple-50 border-purple-200">
-        <h3 className="font-semibold text-purple-900 mb-2">💡 Quick Tips</h3>
-        <ul className="text-sm text-purple-800 space-y-1">
-          <li>• Ask about VPN setup, benefits, time off, or any onboarding topic</li>
-          <li>• I can help you find resources and documentation</li>
-          <li>• Click on suggested questions for quick answers</li>
-          <li>• I'm available 24/7 to assist you!</li>
-        </ul>
-      </div>
+          <div className="card">
+            <p className="text-sm font-medium text-[#6f6f6f]">What this helper can do</p>
+            <div className="mt-4 space-y-3 text-sm text-[#525252]">
+              <p>Point you to the right onboarding resource or checklist item.</p>
+              <p>Suggest next actions when you are unsure what to do next.</p>
+              <p>Surface blockers and help you phrase follow-up questions.</p>
+            </div>
+          </div>
+        </aside>
+      </section>
     </div>
   )
 }

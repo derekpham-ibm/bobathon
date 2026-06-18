@@ -9,10 +9,10 @@ function Login({ onLogin }) {
   const [loading, setLoading] = useState(false)
 
   const demoUsers = [
-    { email: 'sarah.chen@ibm.com', role: 'Software Engineer' },
-    { email: 'marcus.johnson@ibm.com', role: 'Senior Consultant' },
-    { email: 'emily.rodriguez@ibm.com', role: 'Sales Representative' },
-    { email: 'david.kim@ibm.com', role: 'Product Manager' },
+    { email: 'sarah.chen@ibm.com', role: 'Software Engineer', password: 'demo123' },
+    { email: 'marcus.johnson@ibm.com', role: 'Senior Consultant', password: 'demo123' },
+    { email: 'emily.rodriguez@ibm.com', role: 'Sales Representative', password: 'demo123' },
+    { email: 'david.kim@ibm.com', role: 'Product Manager', password: 'demo123' },
   ]
 
   const handleSubmit = async (e) => {
@@ -30,9 +30,10 @@ function Login({ onLogin }) {
     }
   }
 
-  const handleDemoLogin = (demoEmail) => {
+  const handleDemoLogin = (demoEmail, demoPassword) => {
     setEmail(demoEmail)
-    setPassword('demo123')
+    setPassword(demoPassword)
+    setError('')
   }
 
   return (
@@ -103,17 +104,25 @@ function Login({ onLogin }) {
           {/* Demo Users */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-600 text-center mb-4">
-              Demo Users (Password: demo123)
+              Demo accounts from the live mock backend
             </p>
             <div className="space-y-2">
               {demoUsers.map((user) => (
                 <button
                   key={user.email}
-                  onClick={() => handleDemoLogin(user.email)}
-                  className="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm"
+                  onClick={() => handleDemoLogin(user.email, user.password)}
+                  className="w-full text-left px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors text-sm"
                 >
-                  <div className="font-medium text-gray-800">{user.email}</div>
-                  <div className="text-gray-500 text-xs">{user.role}</div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium text-gray-800">{user.email}</div>
+                      <div className="text-gray-500 text-xs">{user.role}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-[11px] uppercase tracking-wide text-gray-400">Password</div>
+                      <div className="font-mono text-xs text-gray-700">{user.password}</div>
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
