@@ -87,15 +87,15 @@ function Tasks({ user, token }) {
 
   return (
     <div className="space-y-6">
-      <section className="card">
+      <section className="card border-l-4 border-[#0f62fe]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-[#6f6f6f]">Onboarding steps</p>
+            <p className="text-sm font-medium text-[#0f62fe]">IBM Onboarding Steps</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#161616]">
               Follow the sequence, finish the essentials, and flag blockers early.
             </h2>
             <p className="mt-3 text-sm text-[#525252]">
-              This view turns your onboarding plan into a clear step-by-step checklist for {user?.first_name || 'you'}.
+              This view turns your IBM onboarding plan into a clear step-by-step checklist for {user?.first_name || 'you'}.
             </p>
           </div>
 
@@ -270,7 +270,7 @@ function Tasks({ user, token }) {
                         : isBlocked
                           ? 'Escalate this blocker or request support to keep moving.'
                           : isInProgress
-                            ? 'You’re actively working on this step.'
+                            ? "You're actively working on this step."
                             : 'Ready when you are.'}
                     </div>
                   </div>
@@ -296,26 +296,127 @@ function Tasks({ user, token }) {
       )}
 
       <section className="grid gap-6 xl:grid-cols-2">
-        <div className="card-muted">
-          <p className="text-sm font-medium text-[#6f6f6f]">Suggested onboarding sequence</p>
-          <ul className="mt-4 space-y-3 text-sm text-[#161616]">
-            <li>1. Complete HR paperwork</li>
-            <li>2. Set up laptop and accounts</li>
-            <li>3. Join team channels</li>
-            <li>4. Meet your manager</li>
-            <li>5. Read the team handbook</li>
-            <li>6. Set up your development environment</li>
-            <li>7. Ship a starter task</li>
-            <li>8. Complete your 30-day check-in</li>
-          </ul>
+        <div className="card border-l-4 border-[#0f62fe]">
+          <p className="text-sm font-medium text-[#0f62fe]">IBM Onboarding Timeline</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+            Your first month at IBM
+          </h3>
+          
+          <div className="mt-5 space-y-5">
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f62fe] text-xs font-semibold text-white">
+                  1
+                </div>
+                <h4 className="text-sm font-semibold text-[#161616]">Day 1: Set up accounts and access</h4>
+              </div>
+              <ul className="mt-2 ml-10 space-y-1 text-sm text-[#525252]">
+                <li>• Activate IBM w3 account and intranet access</li>
+                <li>• Set up laptop, VPN, and security credentials</li>
+                <li>• Complete initial HR paperwork and I-9 verification</li>
+                <li>• Join Slack workspaces and Microsoft Teams</li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f62fe] text-xs font-semibold text-white">
+                  2
+                </div>
+                <h4 className="text-sm font-semibold text-[#161616]">Week 1: Complete required training and join team channels</h4>
+              </div>
+              <ul className="mt-2 ml-10 space-y-1 text-sm text-[#525252]">
+                <li>• Complete IBM security and compliance training (required)</li>
+                <li>• Enroll in benefits through IBM HR portal</li>
+                <li>• Meet your manager and assigned buddy</li>
+                <li>• Join team Slack channels and distribution lists</li>
+                <li>• Review team project documentation and roadmap</li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f62fe] text-xs font-semibold text-white">
+                  3
+                </div>
+                <h4 className="text-sm font-semibold text-[#161616]">Week 2: Set up development/project tools</h4>
+              </div>
+              <ul className="mt-2 ml-10 space-y-1 text-sm text-[#525252]">
+                <li>• Configure development environment and tools</li>
+                <li>• Get access to GitHub Enterprise repositories</li>
+                <li>• Review IBM code standards and review guidelines</li>
+                <li>• Shadow team members on current projects</li>
+                <li>• Complete Your Learning portal orientation</li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#0f62fe] text-xs font-semibold text-white">
+                  4
+                </div>
+                <h4 className="text-sm font-semibold text-[#161616]">Week 3: Review team workflows and shadow a teammate</h4>
+              </div>
+              <ul className="mt-2 ml-10 space-y-1 text-sm text-[#525252]">
+                <li>• Understand team sprint rituals and ceremonies</li>
+                <li>• Shadow experienced team member on daily work</li>
+                <li>• Review architecture docs and technical specs</li>
+                <li>• Start contributing to code reviews</li>
+                <li>• Identify your first starter task</li>
+              </ul>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#198038] text-xs font-semibold text-white">
+                  ✓
+                </div>
+                <h4 className="text-sm font-semibold text-[#161616]">Month 1: Complete first assigned task and manager check-in</h4>
+              </div>
+              <ul className="mt-2 ml-10 space-y-1 text-sm text-[#525252]">
+                <li>• Ship your first contribution to production</li>
+                <li>• Complete 30-day check-in with your manager</li>
+                <li>• Provide feedback on onboarding experience</li>
+                <li>• Set goals for your next 60 days at IBM</li>
+              </ul>
+            </div>
+          </div>
         </div>
 
-        <div className="card-muted">
-          <p className="text-sm font-medium text-[#6f6f6f]">How to use this view</p>
-          <div className="mt-4 space-y-3 text-sm text-[#525252]">
-            <p>Use the filter toggle to focus on what’s next, what’s active, or what’s already done.</p>
-            <p>Mark steps complete as you finish them to keep your dashboard progress accurate.</p>
-            <p>If something is blocked, surface it early so your manager or IT partner can help unblock you.</p>
+        <div className="card border-l-4 border-[#198038]">
+          <p className="text-sm font-medium text-[#198038]">IBM Onboarding Best Practices</p>
+          <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
+            Make the most of your onboarding
+          </h3>
+          
+          <div className="mt-5 space-y-4">
+            <div className="rounded-2xl border border-[#e0e0e0] bg-white p-4">
+              <p className="text-sm font-semibold text-[#161616]">Filter your view</p>
+              <p className="mt-1 text-sm text-[#525252]">
+                Use the filter toggle to focus on what's next, what's active, or what's already done.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#e0e0e0] bg-white p-4">
+              <p className="text-sm font-semibold text-[#161616]">Track your progress</p>
+              <p className="mt-1 text-sm text-[#525252]">
+                Mark steps complete as you finish them to keep your dashboard progress accurate and up to date.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#e0e0e0] bg-white p-4">
+              <p className="text-sm font-semibold text-[#161616]">Surface blockers early</p>
+              <p className="mt-1 text-sm text-[#525252]">
+                If something is blocked, flag it immediately so your manager or IT partner can help unblock you.
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-[#e0e0e0] bg-white p-4">
+              <p className="text-sm font-semibold text-[#161616]">Complete in sequence</p>
+              <p className="mt-1 text-sm text-[#525252]">
+                Follow the suggested order where possible. Some tasks depend on earlier steps being completed first.
+              </p>
+            </div>
           </div>
         </div>
       </section>

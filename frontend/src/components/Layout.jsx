@@ -17,7 +17,6 @@ function Layout({ children, user, onLogout }) {
   const navigation = [
     { name: 'Dashboard', path: '/dashboard', icon: Home },
     { name: 'Onboarding Steps', path: '/tasks', icon: ListChecks },
-    { name: 'Tasks', path: '/tasks', icon: CheckSquare },
     { name: 'Resources', path: '/resources', icon: BookOpen },
     { name: 'Helper', path: '/chat', icon: MessageCircle },
   ]
@@ -35,12 +34,12 @@ function Layout({ children, user, onLogout }) {
       <div className="mx-auto flex min-h-[calc(100vh-1.5rem)] max-w-[1600px] gap-3 md:gap-4">
         <aside className="hidden w-[248px] shrink-0 rounded-[24px] bg-[#161616] px-4 py-5 text-white shadow-[0_24px_60px_rgba(0,0,0,0.18)] lg:flex lg:flex-col">
           <div className="mb-8 flex items-center gap-3 px-2">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white text-sm font-bold tracking-[0.24em] text-[#161616]">
-              B2H
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#0f62fe] text-sm font-bold tracking-[0.24em] text-white">
+              IBM
             </div>
             <div>
-              <p className="text-sm font-semibold text-white">Business to Hire</p>
-              <p className="text-xs text-white/55">Guided onboarding</p>
+              <p className="text-sm font-semibold text-white">IBM Onboarding</p>
+              <p className="text-xs text-white/55">Workspace</p>
             </div>
           </div>
 
@@ -126,10 +125,10 @@ function Layout({ children, user, onLogout }) {
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="min-w-0">
                 <p className="text-xs font-medium uppercase tracking-[0.18em] text-[#6f6f6f]">
-                  B2H / {currentPage?.name || 'Workspace'}
+                  IBM Onboarding / {currentPage?.name || 'Workspace'}
                 </p>
                 <h1 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[#161616]">
-                  {currentPage?.name || 'Business to Hire'}
+                  {currentPage?.name || 'IBM Onboarding Workspace'}
                 </h1>
               </div>
 
@@ -164,8 +163,8 @@ function Layout({ children, user, onLogout }) {
                     to={item.path}
                     className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-medium transition ${
                       isActive
-                        ? 'bg-[#161616] text-white'
-                        : 'bg-[#f4f4f4] text-[#525252]'
+                        ? 'bg-[#0f62fe] text-white'
+                        : 'bg-[#f4f4f4] text-[#525252] hover:bg-[#e0e0e0]'
                     }`}
                   >
                     {item.name}

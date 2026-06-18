@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { tasksAPI } from '../services/api'
 import {
   ArrowRight,
@@ -16,6 +16,7 @@ function Dashboard({ user, token }) {
   const [tasks, setTasks] = useState([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState('all')
+  const navigate = useNavigate()
 
   useEffect(() => {
     loadDashboardData()
@@ -76,24 +77,24 @@ function Dashboard({ user, token }) {
 
   const resources = [
     {
-      title: 'Employee Handbook',
-      description: 'Policies, benefits, and first-week essentials.',
-      meta: 'Core onboarding',
+      title: 'IBM w3 Access Setup',
+      description: 'Set up your IBM intranet account and internal tools.',
+      meta: 'IBM Systems',
     },
     {
-      title: 'Benefits Portal',
-      description: 'Enroll in health, payroll, and direct deposit.',
-      meta: 'HR systems',
+      title: 'IBM Benefits & Wellness',
+      description: 'Enroll in health plans, 401k, and wellness programs.',
+      meta: 'HR & Benefits',
     },
     {
-      title: 'Team Wiki',
-      description: 'Find rituals, contacts, and team-specific norms.',
-      meta: 'Team setup',
+      title: 'Slack & Teams Communication',
+      description: 'Join IBM Slack workspaces and Microsoft Teams channels.',
+      meta: 'Collaboration',
     },
     {
-      title: 'Engineering Setup Guide',
-      description: 'Laptop, accounts, VPN, and development environment.',
-      meta: 'Technical setup',
+      title: 'IBM Development Environment',
+      description: 'Laptop setup, VPN, GitHub Enterprise, and dev tools.',
+      meta: 'Technical Setup',
     },
   ]
 
@@ -121,6 +122,11 @@ function Dashboard({ user, token }) {
     return 'status-badge status-todo'
   }
 
+  const handleHelperPromptClick = (taskTitle) => {
+    // Navigate to chat with the task context
+    navigate('/chat', { state: { prompt: `Help me with: ${taskTitle}` } })
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
@@ -137,11 +143,11 @@ function Dashboard({ user, token }) {
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="max-w-3xl">
-                  <p className="text-sm font-medium text-[#6f6f6f]">
-                    Welcome back, {user?.first_name || 'new hire'}.
+                  <p className="text-sm font-medium text-[#0f62fe]">
+                    IBM Onboarding Workspace • Welcome back, {user?.first_name || 'new hire'}
                   </p>
                   <h2 className="mt-3 text-3xl font-semibold leading-tight tracking-[-0.04em] text-[#161616] md:text-[2.6rem]">
-                    You’re <span className="summary-number-good">{summary.completion_percentage}%</span> through onboarding
+                    You're <span className="summary-number-good">{summary.completion_percentage}%</span> through onboarding
                     {' '}— <span className={blockers.length > 0 ? 'summary-number-alert' : 'summary-number-neutral'}>
                       {blockers.length}
                     </span>{' '}
@@ -239,11 +245,11 @@ function Dashboard({ user, token }) {
           </div>
 
           <div className="card">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="mb-5 flex flex-col gap-4 border-b border-[#e0e0e0] pb-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <p className="text-sm font-medium text-[#6f6f6f]">Today’s focus</p>
+                <p className="text-sm font-medium text-[#0f62fe]">IBM Onboarding Steps</p>
                 <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
-                  Track the next steps in your onboarding flow
+                  Track your next steps
                 </h3>
               </div>
 
@@ -265,7 +271,7 @@ function Dashboard({ user, token }) {
               </div>
             </div>
 
-            <div className="mt-5 space-y-4">
+            <div className="space-y-4">
               {filteredTasks.length > 0 ? (
                 filteredTasks.slice(0, 6).map((task) => (
                   <div
@@ -322,9 +328,9 @@ function Dashboard({ user, token }) {
             <div className="card">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-[#6f6f6f]">Resources</p>
+                  <p className="text-sm font-medium text-[#198038]">IBM Internal Resources</p>
                   <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
-                    Everything you need in one place
+                    Essential IBM tools and guides
                   </h3>
                 </div>
                 <Link to="/resources" className="text-sm font-semibold text-[#0043ce]">
@@ -355,7 +361,7 @@ function Dashboard({ user, token }) {
             <div className="card">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-[#6f6f6f]">Blockers</p>
+                  <p className="text-sm font-medium text-[#da1e28]">Onboarding Blockers</p>
                   <h3 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[#161616]">
                     Flag anything slowing you down
                   </h3>
@@ -386,7 +392,7 @@ function Dashboard({ user, token }) {
                     <CheckCircle2 className="mx-auto text-[#198038]" size={36} />
                     <p className="mt-3 text-sm font-semibold text-[#161616]">No blockers right now</p>
                     <p className="mt-1 text-sm text-[#525252]">
-                      You’re clear to keep moving through the next onboarding steps.
+                      You're clear to keep moving through the next onboarding steps.
                     </p>
                   </div>
                 )}
@@ -399,7 +405,7 @@ function Dashboard({ user, token }) {
           <div className="helper-panel">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-sm font-medium text-white/65">Optional helper</p>
+                <p className="text-sm font-medium text-white/65">IBM Onboarding Helper</p>
                 <h3 className="mt-1 text-2xl font-semibold tracking-[-0.03em] text-white">
                   Need a nudge?
                 </h3>
@@ -412,30 +418,32 @@ function Dashboard({ user, token }) {
                 nextSteps.map((task) => (
                   <button
                     key={`helper-${task.id}`}
-                    className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10"
+                    onClick={() => handleHelperPromptClick(task.title)}
+                    className="block w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left transition hover:bg-white/10"
                   >
                     <p className="text-sm font-semibold text-white">{task.title}</p>
-                    <p className="mt-1 text-xs text-white/60">Suggested next action</p>
+                    <p className="mt-1 text-xs text-white/60">Click for guidance</p>
                   </button>
                 ))
               ) : (
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/70">
-                  You’re all caught up. Check back when new onboarding tasks are assigned.
+                  You're all caught up. Check back when new onboarding tasks are assigned.
                 </div>
               )}
             </div>
 
-            <div className="mt-5 rounded-2xl bg-black/20 p-3">
+            <Link to="/chat" className="mt-5 block rounded-2xl bg-black/20 p-3 transition hover:bg-black/30">
               <input
                 type="text"
                 placeholder="Ask anything…"
-                className="w-full border-0 bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none"
+                className="w-full border-0 bg-transparent text-sm text-white placeholder:text-white/45 focus:outline-none pointer-events-none"
+                readOnly
               />
-            </div>
+            </Link>
           </div>
 
-          <div className="card">
-            <p className="text-sm font-medium text-[#6f6f6f]">Your onboarding profile</p>
+          <div className="card border-l-4 border-[#0f62fe]">
+            <p className="text-sm font-medium text-[#0f62fe]">IBM Onboarding Profile</p>
             <div className="mt-4 space-y-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-[#6f6f6f]">Role</p>

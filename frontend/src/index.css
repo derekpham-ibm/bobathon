@@ -15,6 +15,8 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* IBM Design Language Colors */
   --b2h-bg: #f4f4f4;
   --b2h-panel: #ffffff;
   --b2h-muted: #f4f4f4;
@@ -60,35 +62,45 @@ body {
   .btn-primary {
     @apply inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200;
     background: var(--b2h-blue);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
   }
 
   .btn-primary:hover {
     background: #0036a6;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.16);
+  }
+
+  .btn-primary:active {
+    background: #002d9c;
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center rounded-xl border px-4 py-2.5 text-sm font-medium transition-all duration-200;
-    background: #f4f4f4;
+    background: #ffffff;
     border-color: var(--b2h-border);
     color: var(--b2h-text);
   }
 
   .btn-secondary:hover {
-    background: #ebebeb;
+    background: #f4f4f4;
     border-color: #c6c6c6;
+  }
+
+  .btn-secondary:active {
+    background: #e8e8e8;
   }
 
   .card {
     @apply rounded-[20px] border p-5 md:p-6;
     background: var(--b2h-panel);
     border-color: var(--b2h-border);
-    box-shadow: 0 12px 32px rgba(22, 22, 22, 0.04);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
   .card-muted {
     @apply rounded-[20px] border p-5 md:p-6;
     background: var(--b2h-muted);
-    border-color: transparent;
+    border-color: var(--b2h-border);
   }
 
   .input-field {
@@ -133,8 +145,8 @@ body {
   }
 
   .segmented-control {
-    @apply inline-flex flex-wrap gap-2 rounded-full border p-1;
-    background: #f4f4f4;
+    @apply inline-flex flex-wrap gap-1 rounded-full border p-1;
+    background: #ffffff;
     border-color: var(--b2h-border);
   }
 
@@ -143,9 +155,14 @@ body {
     color: #525252;
   }
 
+  .segmented-option:hover {
+    background: #f4f4f4;
+  }
+
   .segmented-option-active {
-    @apply rounded-full px-4 py-2 text-sm font-semibold text-white shadow-sm;
+    @apply rounded-full px-4 py-2 text-sm font-semibold text-white;
     background: #161616;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
   }
 
   .summary-number-good {
@@ -167,10 +184,10 @@ body {
   }
 
   .helper-panel {
-    @apply rounded-[24px] border p-5 text-white;
-    background: #262626;
-    border-color: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+    @apply rounded-[24px] border p-5 md:p-6 text-white;
+    background: linear-gradient(135deg, #262626 0%, #161616 100%);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 8px 24px rgba(0, 0, 0, 0.12);
   }
 }
 

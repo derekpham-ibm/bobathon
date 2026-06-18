@@ -15,6 +15,7 @@ function Resources() {
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [loading, setLoading] = useState(true)
+  const [activeStarterPack, setActiveStarterPack] = useState(null)
 
   useEffect(() => {
     loadResources()
@@ -27,6 +28,129 @@ function Resources() {
       setResources(data)
     } catch (error) {
       console.error('Failed to load resources:', error)
+      // Fallback to IBM-relevant sample resources if API fails
+      setResources([
+        {
+          id: 1,
+          title: 'IBM w3 Access Setup',
+          description: 'Complete guide to setting up your IBM w3 account, accessing internal tools, and navigating IBM\'s intranet.',
+          category: 'IBM Systems',
+          type: 'guide',
+          estimated_read_time: '30 min',
+          tags: ['w3', 'access', 'intranet'],
+          url: '#w3-access'
+        },
+        {
+          id: 2,
+          title: 'IBM Benefits & Wellness',
+          description: 'Comprehensive overview of IBM health plans, 401k matching, wellness programs, and employee assistance resources.',
+          category: 'HR & Benefits',
+          type: 'link',
+          estimated_read_time: '45 min',
+          tags: ['benefits', 'health', 'wellness'],
+          url: '#ibm-benefits'
+        },
+        {
+          id: 3,
+          title: 'Slack & Teams Communication',
+          description: 'Join essential IBM Slack workspaces and Microsoft Teams channels. Learn communication best practices.',
+          category: 'Collaboration',
+          type: 'guide',
+          estimated_read_time: '20 min',
+          tags: ['slack', 'teams', 'communication'],
+          url: '#communication-tools'
+        },
+        {
+          id: 4,
+          title: 'IBM Development Environment',
+          description: 'Set up your IBM-issued laptop, VPN access, GitHub Enterprise, and development tools for your role.',
+          category: 'Technical Setup',
+          type: 'guide',
+          estimated_read_time: '2 hours',
+          tags: ['laptop', 'vpn', 'github', 'tools'],
+          url: '#dev-environment'
+        },
+        {
+          id: 5,
+          title: 'Security & Compliance Training',
+          description: 'Required IBM security awareness, data protection, and compliance training modules.',
+          category: 'Training',
+          type: 'video',
+          estimated_read_time: '90 min',
+          tags: ['security', 'compliance', 'required'],
+          url: '#security-training'
+        },
+        {
+          id: 6,
+          title: 'Your Learning Portal',
+          description: 'Access IBM\'s learning platform for technical courses, certifications, and professional development.',
+          category: 'Training',
+          type: 'link',
+          estimated_read_time: '15 min',
+          tags: ['learning', 'courses', 'certifications'],
+          url: '#your-learning'
+        },
+        {
+          id: 7,
+          title: 'Team Project Documentation',
+          description: 'Current project specs, architecture docs, and team roadmap. Understand what we\'re building.',
+          category: 'Collaboration',
+          type: 'document',
+          estimated_read_time: '45 min',
+          tags: ['projects', 'architecture', 'roadmap'],
+          url: '#project-docs'
+        },
+        {
+          id: 8,
+          title: 'IBM Manager & Buddy Program',
+          description: 'Connect with your manager and assigned buddy. Schedule your first 1:1s and onboarding check-ins.',
+          category: 'HR & Benefits',
+          type: 'guide',
+          estimated_read_time: '20 min',
+          tags: ['manager', 'buddy', 'mentorship'],
+          url: '#manager-buddy'
+        },
+        {
+          id: 9,
+          title: 'First Week at IBM Checklist',
+          description: 'Day-by-day guide for your first week: required trainings, meetings, and essential setup tasks.',
+          category: 'Onboarding',
+          type: 'guide',
+          estimated_read_time: '15 min',
+          tags: ['checklist', 'first-week', 'onboarding'],
+          url: '#first-week'
+        },
+        {
+          id: 10,
+          title: 'IBM Code Standards & Review',
+          description: 'IBM\'s coding standards, pull request guidelines, and code review best practices for your team.',
+          category: 'Technical Setup',
+          type: 'guide',
+          estimated_read_time: '30 min',
+          tags: ['code-review', 'standards', 'best-practices'],
+          url: '#code-standards'
+        },
+        {
+          id: 11,
+          title: 'Time Off & Holiday Schedule',
+          description: 'IBM PTO policy, holiday calendar, and how to request time off through the HR system.',
+          category: 'HR & Benefits',
+          type: 'document',
+          estimated_read_time: '15 min',
+          tags: ['pto', 'holidays', 'time-off'],
+          url: '#pto-policy'
+        },
+        {
+          id: 12,
+          title: 'IBM Org Chart & Contacts',
+          description: 'Navigate IBM\'s organizational structure, find key contacts, and understand reporting lines.',
+          category: 'Collaboration',
+          type: 'document',
+          estimated_read_time: '10 min',
+          tags: ['org-chart', 'contacts', 'structure'],
+          url: '#org-chart'
+        }
+      ])
     } finally {
       setLoading(false)
     }
@@ -57,10 +181,20 @@ function Resources() {
   }
 
   const filteredResources = useMemo(() => {
-    return selectedCategory === 'all'
-      ? resources
-      : resources.filter((resource) => resource.category === selectedCategory)
-  }, [resources, selectedCategory])
+    let filtered = resources
+
+    // Filter by category
+    if (selectedCategory !== 'all') {
+      filtered = filtered.filter((resource) => resource.category === selectedCategory)
+    }
+
+    // Filter by active starter pack
+    if (activeStarterPack !== null) {
+      filtered = filtered.filter((resource) => resource.id === activeStarterPack)
+    }
+
+    return filtered
+  }, [resources, selectedCategory, activeStarterPack])
 
   const getIcon = (type) => {
     switch (type) {
@@ -75,6 +209,22 @@ function Resources() {
     }
   }
 
+  const handleStarterPackClick = (itemId) => {
+    const resource = resources.find(r => r.id === itemId)
+    if (resource) {
+      setActiveStarterPack(itemId)
+      setSelectedCategory(resource.category)
+      setSearchQuery('')
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }
+
+  const clearFilters = () => {
+    setActiveStarterPack(null)
+    setSelectedCategory('all')
+    setSearchQuery('')
+  }
+
   if (loading) {
     return (
       <div className="flex min-h-[420px] items-center justify-center">
@@ -85,15 +235,15 @@ function Resources() {
 
   return (
     <div className="space-y-6">
-      <section className="card">
+      <section className="card border-l-4 border-[#0f62fe]">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-3xl">
-            <p className="text-sm font-medium text-[#6f6f6f]">Resources</p>
+            <p className="text-sm font-medium text-[#0f62fe]">IBM Internal Resources</p>
             <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em] text-[#161616]">
-              One place for guides, docs, links, and onboarding references.
+              One place for IBM guides, docs, links, and onboarding references.
             </h2>
             <p className="mt-3 text-sm text-[#525252]">
-              Use this hub to find the right handbook, setup guide, or team documentation without hunting across tools.
+              Use this hub to find the right IBM handbook, setup guide, or team documentation without hunting across tools.
             </p>
           </div>
 
@@ -132,16 +282,29 @@ function Resources() {
             </div>
           </form>
 
-          <div className="segmented-control">
-            {categories.map((category) => (
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="segmented-control">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => {
+                    setSelectedCategory(category)
+                    setActiveStarterPack(null)
+                  }}
+                  className={selectedCategory === category ? 'segmented-option-active' : 'segmented-option'}
+                >
+                  {category === 'all' ? 'All resources' : category}
+                </button>
+              ))}
+            </div>
+            {(activeStarterPack !== null || selectedCategory !== 'all') && (
               <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={selectedCategory === category ? 'segmented-option-active' : 'segmented-option'}
+                onClick={clearFilters}
+                className="btn-secondary text-xs"
               >
-                {category === 'all' ? 'All resources' : category}
+                Clear filters
               </button>
-            ))}
+            )}
           </div>
 
           {filteredResources.length > 0 ? (
@@ -200,19 +363,25 @@ function Resources() {
         </div>
 
         <aside className="space-y-6">
-          <div className="card">
-            <p className="text-sm font-medium text-[#6f6f6f]">Suggested starter pack</p>
+          <div className="card border-l-4 border-[#198038]">
+            <p className="text-sm font-medium text-[#198038]">IBM Onboarding Starter Pack</p>
             <div className="mt-4 space-y-3">
               {[
-                'Employee Handbook',
-                'Benefits Portal',
-                'Team Wiki',
-                'Engineering Setup Guide',
+                { title: 'IBM w3 Access Setup', id: 1 },
+                { title: 'IBM Benefits & Wellness', id: 2 },
+                { title: 'Slack & Teams Communication', id: 3 },
+                { title: 'IBM Development Environment', id: 4 },
               ].map((item) => (
-                <div key={item} className="card-muted p-4">
-                  <p className="text-sm font-semibold text-[#161616]">{item}</p>
-                  <p className="mt-1 text-sm text-[#525252]">Recommended for your first week.</p>
-                </div>
+                <button
+                  key={item.id}
+                  onClick={() => handleStarterPackClick(item.id)}
+                  className={`w-full card-muted p-4 transition-all hover:bg-[#ebebeb] hover:shadow-md cursor-pointer text-left border-2 ${
+                    activeStarterPack === item.id ? 'border-[#0f62fe] bg-[#d0e2ff]' : 'border-transparent'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-[#161616]">{item.title}</p>
+                  <p className="mt-1 text-xs text-[#525252]">Recommended for your first week.</p>
+                </button>
               ))}
             </div>
           </div>
